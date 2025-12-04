@@ -10,20 +10,22 @@ public class YoungestPeopleCsvHelperDataRetriever : IYoungestPeopleDataRetriever
         var lineCount = 0;
         var youngestPeopleFinder = new YoungestPeopleFinder(options.MaxYoungestListCount);
 
-
-        using var reader = new StreamReader(options.CsvFilePath);
-        using var csv = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture);
-
-        var records = csv.GetRecords<Person>();
-
-        foreach (var record in records)
+        foreach (var csvFilePath in options.CsvFilePaths)
         {
-            lineCount++;
+            using var reader = new StreamReader(csvFilePath);
+            using var csv = new CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture);
 
-            if(options.IsDebugMode)
-                Console.WriteLine($"{record.Index},{record.UserId},{record.FirstName},{record.LastName},{record.DateOfBirth.ToShortDateString()}");
+            var records = csv.GetRecords<Person>();
 
-            youngestPeopleFinder.AddPersonIfYounger(record);
+            foreach (var record in records)
+            {
+                lineCount++;
+
+                if (options.IsDebugMode)
+                    Console.WriteLine($"{record.Index},{record.UserId},{record.FirstName},{record.LastName},{record.DateOfBirth.ToShortDateString()}");
+
+                youngestPeopleFinder.AddPersonIfYounger(record);
+            }
         }
 
         return new YoungestPeopleDataRetrieverResult

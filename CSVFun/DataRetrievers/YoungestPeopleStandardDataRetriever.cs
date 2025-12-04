@@ -10,41 +10,44 @@ public class YoungestPeopleStandardDataRetriever : IYoungestPeopleDataRetriever
         var lineCount = 0;
         var youngestPeopleFinder = new YoungestPeopleFinder(options.MaxYoungestListCount);
 
-        using var streamReader = new StreamReader(options.CsvFilePath);
-        using (TextFieldParser parser = new TextFieldParser(streamReader))
+        foreach (var csvFilePath in options.CsvFilePaths)
         {
-            parser.SetDelimiters([","]);
-            parser.HasFieldsEnclosedInQuotes = true;
-
-            parser.ReadLine(); //Ignore the header line
-
-            while (!parser.EndOfData)
+            using var streamReader = new StreamReader(csvFilePath);
+            using (TextFieldParser parser = new TextFieldParser(streamReader))
             {
-                var values = new List<string>();
+                parser.SetDelimiters([","]);
+                parser.HasFieldsEnclosedInQuotes = true;
 
-                var readFields = parser.ReadFields();
-                if (readFields != null)
+                parser.ReadLine(); //Ignore the header line
+
+                while (!parser.EndOfData)
                 {
-                    values.AddRange(readFields);
-                    lineCount++;
+                    var values = new List<string>();
+
+                    var readFields = parser.ReadFields();
+                    if (readFields != null)
+                    {
+                        values.AddRange(readFields);
+                        lineCount++;
 
 
-                    if (options.IsDebugMode)
-                        Console.WriteLine(String.Join(",", readFields));
+                        if (options.IsDebugMode)
+                            Console.WriteLine(String.Join(",", readFields));
 
-                    youngestPeopleFinder.AddPersonIfYounger(
-                        new Person
-                        {
-                            Index = int.Parse(readFields[0]),
-                            UserId = readFields[1],
-                            FirstName = readFields[2],
-                            LastName = readFields[3],
-                            //...
-                            DateOfBirth = DateTime.Parse(readFields[7]),
-                        }
-                    );
+                        youngestPeopleFinder.AddPersonIfYounger(
+                            new Person
+                            {
+                                Index = int.Parse(readFields[0]),
+                                UserId = readFields[1],
+                                FirstName = readFields[2],
+                                LastName = readFields[3],
+                                //...
+                                DateOfBirth = DateTime.Parse(readFields[7]),
+                            }
+                        );
+                    }
+
                 }
-
             }
         }
         return new YoungestPeopleDataRetrieverResult
